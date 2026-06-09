@@ -20,7 +20,7 @@ public class KycDataController(IKycAggregationService kycAggregationService) : C
     {
         if (!SsnFormatRegex.IsMatch(ssn))
         {
-            return BadRequest(new ErrorResponse("Invalid SSN format. Expected format is yyyyMMdd-xxxx."));
+            return BadRequest(new ErrorResponse("Invalid SSN format. Expected format is YYYYMMDD-XXXX."));
         }
 
         var response = await kycAggregationService.GetAggregatedKycDataAsync(ssn, cancellationToken);
