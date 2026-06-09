@@ -1,4 +1,6 @@
 using KycAggregationService.Api.Clients.CustomerDataApi;
+using KycAggregationService.Api.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,11 @@ builder.Services.AddHttpClient<ICustomerDataApiClient, CustomerDataApiClient>(cl
     }
 
     client.BaseAddress = new Uri(baseUrl);
+});
+
+builder.Services.AddDbContext<KycAggregationDbContext>(options =>
+{
+    options.UseSqlite(builder.Configuration.GetConnectionString("KycDatabase"));
 });
 
 builder.Services.AddControllers();
