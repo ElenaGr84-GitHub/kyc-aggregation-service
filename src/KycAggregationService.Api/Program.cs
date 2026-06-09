@@ -1,5 +1,6 @@
 using KycAggregationService.Api.Clients.CustomerDataApi;
 using KycAggregationService.Api.Persistence;
+using KycAggregationService.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +22,8 @@ builder.Services.AddDbContext<KycAggregationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("KycDatabase"));
 });
 
+builder.Services.AddScoped<IKycAggregationService, KycDataAggregationService>();
+
 builder.Services.AddControllers();
 
 builder.Services.AddOpenApi();
@@ -31,8 +34,6 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
-app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

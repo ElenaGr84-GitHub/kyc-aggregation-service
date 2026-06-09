@@ -1,26 +1,25 @@
-using Microsoft.AspNetCore.Mvc;
 using KycAggregationService.Api.Models;
+using KycAggregationService.Api.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace KycAggregationService.Api.Controllers;
 
 [ApiController]
 [Route("kyc-data")]
-public class KycDataController : ControllerBase
+public class KycDataController(IKycAggregationService kycAggregationService) : ControllerBase
 {
     [HttpGet("{ssn}")]
-    public ActionResult<AggregatedKycDataResponse> GetAggregatedKycData(string ssn)
+    public async Task<ActionResult<AggregatedKycDataResponse>> GetAggregatedKycData(string ssn, CancellationToken cancellationToken)
     {
-        var response = new AggregatedKycDataResponse
+        var response = await kycAggregationService.GetAggregatedKycDataAsync(ssn, cancellationToken);
+
+        if (response is null)
         {
-            Ssn = ssn,
-            FirstName = "Lars",
-            LastName = "Larsson",
-            Address = "Smågatan 1, 123 22 Malmö",
-            PhoneNumber = "+46 70 123 45 67",
-            Email = "lars.larsson@example.com",
-            TaxCountry = "SE",
-            Income = 550000
-        };
+            return NotFound(new
+            {
+                error = "Customer data not found for the provided SSN."
+            });
+        }
 
         return Ok(response);
     }

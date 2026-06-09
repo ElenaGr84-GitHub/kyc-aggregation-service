@@ -13,9 +13,15 @@ public class AddressResponse
     [JsonPropertyName("state")]
     public string? State { get; set; }
 
-    [JsonPropertyName("postal_code")]
+    [JsonPropertyName("postalCode")]
     public string? PostalCode { get; set; }
+
+    [JsonPropertyName("postal_code")]
+    public string? PostalCodeSnakeCase { get; set; }
 
     [JsonPropertyName("country")]
     public string? Country { get; set; }
+
+    [JsonIgnore]
+    public string? EffectivePostalCode => PostalCode ?? PostalCodeSnakeCase;
 }
