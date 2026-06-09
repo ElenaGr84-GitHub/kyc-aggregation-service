@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KycAggregationService.Api.Services;
 
-public class KycDataAggregationService(KycAggregationDbContext dbContext, ICustomerDataApiClient customerDataApiClient) : IKycAggregationService
+public class KycDataAggregationService(KycAggregationDbContext dbContext, ICustomerDataApiClient customerDataApiClient, ILogger<KycDataAggregationService> logger) : IKycAggregationService
 {
     public async Task<AggregatedKycDataResponse?> GetAggregatedKycDataAsync(string ssn, CancellationToken cancellationToken = default)
     {
@@ -16,8 +16,10 @@ public class KycDataAggregationService(KycAggregationDbContext dbContext, ICusto
 
         if (existingData is not null)
         {
+            logger.LogInformation("Returning aggregated KYC data from local database.");
             return MapToResponse(existingData);
         }
+        logger.LogInformation("Aggregated KYC data was not found locally. Fetching data from Customer Data API.");
 
         var asOfDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
@@ -33,6 +35,7 @@ public class KycDataAggregationService(KycAggregationDbContext dbContext, ICusto
 
         if (personalDetails is null || contactDetails is null || kycForm is null)
         {
+            logger.LogWarning("Customer Data API did not return all required response objects.");
             return null;
         }
 
@@ -49,6 +52,12 @@ public class KycDataAggregationService(KycAggregationDbContext dbContext, ICusto
             string.IsNullOrWhiteSpace(address) ||
             string.IsNullOrWhiteSpace(taxCountry))
         {
+            logger.LogWarning(
+                "Aggregated KYC data is missing required fields. FirstNamePresent: {FirstNamePresent}, LastNamePresent: {LastNamePresent}, AddressPresent: {AddressPresent}, TaxCountryPresent: {TaxCountryPresent}",
+                !string.IsNullOrWhiteSpace(firstName),
+                !string.IsNullOrWhiteSpace(lastName),
+                !string.IsNullOrWhiteSpace(address),
+                !string.IsNullOrWhiteSpace(taxCountry));
             return null;
         }
 
@@ -66,6 +75,7 @@ public class KycDataAggregationService(KycAggregationDbContext dbContext, ICusto
 
         dbContext.AggregatedKycData.Add(entity);
         await dbContext.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("Aggregated KYC data was persisted locally.");
 
         return MapToResponse(entity);
     }

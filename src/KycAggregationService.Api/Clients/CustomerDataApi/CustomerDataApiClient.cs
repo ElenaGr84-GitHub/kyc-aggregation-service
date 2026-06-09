@@ -4,7 +4,7 @@ using KycAggregationService.Api.Clients.CustomerDataApi.Models;
 
 namespace KycAggregationService.Api.Clients.CustomerDataApi;
 
-public class CustomerDataApiClient(HttpClient httpClient) : ICustomerDataApiClient
+public class CustomerDataApiClient(HttpClient httpClient, ILogger<CustomerDataApiClient> logger) : ICustomerDataApiClient
 {
     public Task<PersonalDetailsResponse?> GetPersonalDetailsAsync(string ssn, CancellationToken cancellationToken = default)
     {
@@ -28,8 +28,15 @@ public class CustomerDataApiClient(HttpClient httpClient) : ICustomerDataApiClie
         using var response = await httpClient.GetAsync(path, cancellationToken);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
+            logger.LogInformation("Customer Data API returned not found.");
             return default;
         }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning("Customer Data API returned unsuccessful status code {StatusCode}.", (int)response.StatusCode);
+        }
+
         response.EnsureSuccessStatusCode();
 
         return await response.Content.ReadFromJsonAsync<T>(cancellationToken);

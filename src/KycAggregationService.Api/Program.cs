@@ -1,4 +1,5 @@
 using KycAggregationService.Api.Clients.CustomerDataApi;
+using KycAggregationService.Api.Middleware;
 using KycAggregationService.Api.Persistence;
 using KycAggregationService.Api.Services;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +36,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseAuthorization();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapControllers();
 
