@@ -1,0 +1,6 @@
+@KycAggregationService.Api_HostAddress = http://localhost:5233
+@TestSsn = 19800115-1234
+
+### Get aggregated KYC data
+GET {{KycAggregationService.Api_HostAddress}}/kyc-data/{{TestSsn}}
+Accept: application/json
